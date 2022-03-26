@@ -10,14 +10,14 @@ contract Votes{
     }
 
     struct Vote{
+        address voteWinner;
+        address[] candidates;
+        address[] voters;
         mapping (address => uint) candidateVotes;
         mapping (address => bool) isVoted;
         mapping (address => bool) isCandidate;
         uint bornTime;
         uint contribution;
-        address voteWinner;
-        address[] candidates;
-        address[] voters;
         bool isActive;
     }
     
