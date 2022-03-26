@@ -3,6 +3,7 @@ require("@nomiclabs/hardhat-etherscan");
 require('solidity-coverage');
 require('dotenv').config();
 
+require('./task/addVote.js');
 
 task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
   const accounts = await hre.ethers.getSigners();
