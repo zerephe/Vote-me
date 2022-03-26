@@ -10,22 +10,22 @@ contract Votes{
     }
 
     struct Vote{
-        bool isActive;
+        mapping (address => uint) candidateVotes;
+        mapping (address => bool) isVoted;
+        mapping (address => bool) isCandidate;
         uint bornTime;
         uint contribution;
         address voteWinner;
         address[] candidates;
         address[] voters;
-        mapping (address => uint) candidateVotes;
-        mapping (address => bool) isVoted;
-        mapping (address => bool) isCandidate;
+        bool isActive;
     }
-
-    uint voteId;
-    uint fee;
+    
     address contractOwner;
-    address _defaultAddress;
+    address _defaulrAddress;
     mapping (uint => Vote) votes;
+    uint voteId;
+    uint voteDuration = 3 days;
 
     modifier ownerOnly {
         require(msg.sender == contractOwner, "Access denied!");
@@ -38,55 +38,83 @@ contract Votes{
         vote.isActive = true;
         vote.candidates = retrivedCandidates;
 
+        for(uint i = 0; i < retrivedCandidates.length; i++){
+            vote.isCandidate[retrivedCandidates[i]] = true;
+        }
+
         voteId++;
     }
 
-    function withdraw(address payable receiverAddress, uint _withdrawAmount) public ownerOnly{
+    function withdrawFee(address payable receiverAddress, uint _withdrawAmount) public ownerOnly{
         receiverAddress.transfer(_withdrawAmount); 
     }
 
     function voteFor(uint _voteId, address candidate) public payable{
-        require(votes[_voteId].isActive, "Vote doesn't exist!");
-        require(votes[_voteId].isCandidate[candidate], "No such candidate!");
-        require(votes[_voteId].isVoted[msg.sender], "You've already voted!");
+        Vote storage vote = votes[_voteId];
+
+        require(vote.isActive, "Vote doesn't exist!");
+        require(vote.isCandidate[candidate], "No such candidate!");
+        require(!vote.isCandidate[msg.sender], "Candidates can't vote!");
+        require(!vote.isVoted[msg.sender], "You've already voted!");
         require(msg.value >= 0.01 ether, "Not enough contribution!");
 
-        address _voteWinner = votes[_voteId].voteWinner;
+        address _voteWinner = vote.voteWinner;
         
-        if(votes[_voteId].candidateVotes[candidate] > votes[_voteId].candidateVotes[_voteWinner]){
-            votes[_voteId].voteWinner = candidate;
+        if(vote.candidateVotes[candidate] > vote.candidateVotes[_voteWinner] || vote.voteWinner == _defaulrAddress){
+            vote.voteWinner = candidate;
         }
 
-        votes[_voteId].candidateVotes[candidate]++;
-        votes[_voteId].voters.push(msg.sender);
-        votes[_voteId].isVoted[msg.sender] = true;
+        vote.candidateVotes[candidate]++;
+        vote.voters.push(msg.sender);
+        vote.isVoted[msg.sender] = true;
+        vote.contribution += (msg.value/10)*9;
+    }
+
+    function finishVote(uint _voteId) public payable{
+        Vote storage vote = votes[_voteId];
         
-        votes[_voteId].contribution += (msg.value/10)*9;
-        fee += msg.value/10;
+        require(vote.bornTime > 0, "No such vote!");
+        require(vote.bornTime <= block.timestamp - voteDuration , "Can't close the vote yet!");
+
+        payable(vote.voteWinner).transfer(vote.contribution);
+
+        vote.isActive = false;
+        vote.bornTime = 0;
     }
 
-    function removeVote(uint _voteId) public payable{
-        require(votes[_voteId].bornTime + 3 days <= block.timestamp, "Can't close the vote yet!");
-
-        payable(votes[_voteId].voteWinner).transfer(votes[_voteId].contribution);
-
-        votes[_voteId].isActive = false;
-        votes[_voteId].bornTime = 0;
+    function owner() public view returns(address) {
+        return contractOwner;
     }
+    
+    function testTime() public ownerOnly{
+        //This function is for test only.
+        //Sets vote duration to 0 in order to be able to finish voting while testing
+        voteDuration = 0;
+    }
+
     function getVoters(uint _voteId) public view returns(address[] memory){
-        return votes[_voteId].voters;
+        Vote storage vote = votes[_voteId];
+        return vote.voters;
     }
 
     function getCandidates(uint _voteId) public view returns(address[] memory){
-         return votes[_voteId].candidates;
+        Vote storage vote = votes[_voteId];
+        return vote.candidates;
     }
 
     function getWinner(uint _voteId) public view returns(address){
-        return votes[_voteId].voteWinner;
+        Vote storage vote = votes[_voteId];
+
+        require(vote.voteWinner != _defaulrAddress, "No votes, no winner!");
+        return vote.voteWinner;
     }
 
     function getVoteCount() public view returns(uint){
         return voteId;
+    }
+
+    function getVoteTimeStamp(uint _voteId) public view returns(uint){
+        Vote storage vote = votes[_voteId];
+        return vote.bornTime;
     } 
 }
-
