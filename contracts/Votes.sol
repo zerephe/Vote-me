@@ -27,11 +27,6 @@ contract Votes{
     uint voteId;
     uint voteDuration = 3 days;
 
-    modifier ownerOnly {
-        require(msg.sender == contractOwner, "Access denied!");
-        _;
-    }
-
     function addVote(address[] memory retrivedCandidates) public ownerOnly{
         Vote storage vote = votes[voteId];
         vote.bornTime = block.timestamp;
@@ -80,6 +75,11 @@ contract Votes{
 
         vote.isActive = false;
         vote.bornTime = 0;
+    }
+
+    modifier ownerOnly {
+        require(msg.sender == contractOwner, "Access denied!");
+        _;
     }
 
     function owner() public view returns(address) {
