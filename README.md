@@ -36,7 +36,7 @@ npx hardhat
 
 Add vote:
 ```shell
-npx hardhat addVote --vote-id 'ID for testing from 0-10..000' --network rinkeby
+npx hardhat addVote --candidates 'List of candidates addresses separated by ","' --network rinkeby
 ```
 
 Vote for someone:
