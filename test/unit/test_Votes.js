@@ -139,6 +139,10 @@ describe("Votes", function () {
       await withdrawal.wait();
     });
 
+    it("Should be reverted withdrawal", async function(){
+      await expect(voteToken.withdrawFee(addr1.address, 100)).to.be.reverted;
+    });
+
     it("Should be possible to send contribution to vote-winner", async function(){
       //Make some vote
       await voteToken.addVote([addr1.address, "0x4B20993Bc481177ec7E8f571ceCaE8A9e22C02db"]);

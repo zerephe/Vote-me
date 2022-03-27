@@ -4,6 +4,10 @@ require('solidity-coverage');
 require('dotenv').config();
 
 require('./task/addVote.js');
+require('./task/withdrawFee.js');
+require('./task/voteFor.js');
+require('./task/finishVote.js');
+require('./task/getters.js');
 
 task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
   const accounts = await hre.ethers.getSigners();
