@@ -1,6 +1,5 @@
 require('dotenv').config();
 
-
 const Votes = require('../artifacts/contracts/Votes.sol/Votes.json');
 
 task("voteFor", "Vote for a candidate")
@@ -15,7 +14,8 @@ task("voteFor", "Vote for a candidate")
       signer
     );
 
-    const result = await voteToken.voteFor(taskArgs.voteId, taskArgs.candidateAddress);
+    let contribution = hre.ethers.utils.parseEther("0.01");
+    const result = await voteToken.voteFor(taskArgs.voteId, taskArgs.candidateAddress, {value: contribution});
     console.log(result);
   });
 

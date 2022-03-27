@@ -51,7 +51,7 @@ task("getVoters", "Get voters list in specific vote")
     console.log(result);
   });
 
-  task("getTimestamp", "Get timestamp of specific vote")
+  task("getTimeStamp", "Get timestamp of specific vote")
   .addParam("voteId", "Vote id (0...100)")
   .setAction(async (taskArgs) => {
     const [signer] = await hre.ethers.getSigners()
